@@ -1,0 +1,69 @@
+name: "Code Analysis"
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@v3
+
+      - name: Get Flutter Version From FVM config
+        id: get_flutter_version
+        run: echo "::set-output name=version::$(cat .fvm/fvm_config.json | jq -r '.flutterSdkVersion')"
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2.12.0
+        with:
+          flutter-version: ${{ steps.get_flutter_version.outputs.version }}
+          channel: stable
+          cache: true
+          cache-key: flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: 📦 Install Dependencies
+        run: |
+          flutter pub global activate very_good_cli
+          flutter pub global activate intl_utils
+          flutter pub global activate coverage
+
+      - name: 🦄 Generate Code
+        run: |
+          flutter pub global run intl_utils:generate
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Install DCM
+        uses: CQLabs/setup-dcm@v1
+        with:
+           github_token: ${{ secrets.GITHUB_TOKEN }}
+  
+      - name: ✨ Check Formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: 🕵️ Analyze
+        run: flutter analyze .
+
+      - name: Run DCM
+        run: dcm analyze .
+
+      - name: 🧪 Run Tests
+        run: flutter test --coverage --coverage-path=coverage/lcov.info --test-randomize-ordering-seed=random --concurrency=10
+
+      - name: 📈 Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          # not needed for public repos
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
