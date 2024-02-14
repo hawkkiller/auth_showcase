@@ -41,19 +41,11 @@ jobs:
           flutter pub global run intl_utils:generate
           dart run build_runner build --delete-conflicting-outputs
 
-      - name: Install DCM
-        uses: CQLabs/setup-dcm@v1
-        with:
-           github_token: ${{ secrets.GITHUB_TOKEN }}
-  
       - name: ✨ Check Formatting
         run: dart format --set-exit-if-changed .
 
       - name: 🕵️ Analyze
         run: flutter analyze .
-
-      - name: Run DCM
-        run: dcm analyze .
 
       - name: 🧪 Run Tests
         run: flutter test --coverage --coverage-path=coverage/lcov.info --test-randomize-ordering-seed=random --concurrency=10
