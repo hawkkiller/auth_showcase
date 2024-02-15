@@ -4,7 +4,6 @@ import 'package:sizzle_starter/src/feature/app/widget/material_context.dart';
 import 'package:sizzle_starter/src/feature/initialization/logic/initialization_processor.dart';
 import 'package:sizzle_starter/src/feature/initialization/model/dependencies.dart';
 import 'package:sizzle_starter/src/feature/initialization/widget/dependencies_scope.dart';
-import 'package:sizzle_starter/src/feature/settings/widget/settings_scope.dart';
 
 /// {@template app}
 /// [App] is an entry point to the application.
@@ -25,10 +24,7 @@ class App extends StatelessWidget {
         bundle: SentryAssetBundle(),
         child: DependenciesScope(
           dependencies: result.dependencies,
-          child: SettingsScope(
-            settingsBloc: result.dependencies.settingsBloc,
-            child: const MaterialContext(),
-          ),
+          child: const MaterialContext(),
         ),
       );
 }

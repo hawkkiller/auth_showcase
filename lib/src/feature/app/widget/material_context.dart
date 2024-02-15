@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sizzle_starter/src/core/localization/localization.dart';
-import 'package:sizzle_starter/src/feature/home/widget/home_screen.dart';
-import 'package:sizzle_starter/src/feature/settings/widget/settings_scope.dart';
+import 'package:sizzle_starter/src/core/router/routes.dart';
+
+const _colorScheme = ColorScheme.light(
+  primary: Color(0xFF4C7EDE),
+  outline: Color(0xFFE2E2E2),
+  onSurface: Color(0xFF5D5E64),
+  onBackground: Color(0xFF141319),
+);
+
+final _themeData = ThemeData(
+  useMaterial3: true,
+  colorScheme: _colorScheme,
+  textTheme: GoogleFonts.rubikTextTheme(),
+);
 
 /// {@template material_context}
 /// [MaterialContext] is an entry point to the material context.
 ///
 /// This widget sets locales, themes and routing.
 /// {@endtemplate}
-class MaterialContext extends StatelessWidget {
+class MaterialContext extends StatefulWidget {
   /// {@macro material_context}
   const MaterialContext({super.key});
 
@@ -17,25 +31,32 @@ class MaterialContext extends StatelessWidget {
   static final _globalKey = GlobalKey();
 
   @override
-  Widget build(BuildContext context) {
-    final theme = SettingsScope.themeOf(context).theme;
-    final locale = SettingsScope.localeOf(context).locale;
+  State<MaterialContext> createState() => _MaterialContextState();
+}
 
-    return MaterialApp(
-      key: _globalKey,
-      theme: theme.lightTheme,
-      darkTheme: theme.darkTheme,
-      themeMode: theme.mode,
-      localizationsDelegates: Localization.localizationDelegates,
-      supportedLocales: Localization.supportedLocales,
-      locale: locale,
-      home: const HomeScreen(),
-      // TODO: You may want to override the default text scaling behavior.
-      builder: (context, child) => MediaQuery.withClampedTextScaling(
-        minScaleFactor: 1.0,
-        maxScaleFactor: 2.0,
-        child: child!,
-      ),
+class _MaterialContextState extends State<MaterialContext> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = GoRouter(
+      initialLocation: '/login',
+      routes: $appRoutes,
     );
   }
+
+  @override
+  Widget build(BuildContext context) => MaterialApp.router(
+        key: MaterialContext._globalKey,
+        theme: _themeData,
+        routerConfig: _router,
+        localizationsDelegates: Localization.localizationDelegates,
+        supportedLocales: Localization.supportedLocales,
+        builder: (context, child) => MediaQuery.withClampedTextScaling(
+          minScaleFactor: 1.0,
+          maxScaleFactor: 2.0,
+          child: child!,
+        ),
+      );
 }
