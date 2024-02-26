@@ -1,6 +1,16 @@
+import 'package:intercepted_client/intercepted_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizzle_starter/src/core/utils/logger.dart';
 import 'package:sizzle_starter/src/feature/app/logic/tracking_manager.dart';
+import 'package:sizzle_starter/src/feature/auth/bloc/auth_bloc.dart';
+import 'package:sizzle_starter/src/feature/auth/data/auth_data_source.dart';
+import 'package:sizzle_starter/src/feature/auth/data/auth_repository.dart';
+import 'package:sizzle_starter/src/feature/auth/data/token_storage_sp.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/authorization_client.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/fake_http_client.dart';
+import 'package:sizzle_starter/src/feature/dashboard/data/pokemon_data_source.dart';
+import 'package:sizzle_starter/src/feature/dashboard/data/pokemon_repository.dart';
 import 'package:sizzle_starter/src/feature/initialization/model/dependencies.dart';
 import 'package:sizzle_starter/src/feature/initialization/model/environment_store.dart';
 
@@ -22,9 +32,39 @@ final class InitializationProcessor {
 
   Future<Dependencies> _initDependencies() async {
     final sharedPreferences = await SharedPreferences.getInstance();
+    final fakeClient = FakeHttpClient();
+
+    final authInterceptor = AuthInterceptor(
+      tokenStorage: TokenStorageSP(sharedPreferences: sharedPreferences),
+      authorizationClient: AuthorizationClientToken(fakeClient),
+      retryClient: fakeClient,
+    );
+
+    final interceptedClient = InterceptedClient(
+      inner: fakeClient,
+      interceptors: [authInterceptor],
+    );
+
+    final status = await authInterceptor.init();
+
+    final authBloc = AuthBloc(
+      AuthState.idle(status: status),
+      authStatusSource: authInterceptor,
+      authRepository: AuthRepositoryImpl(
+        dataSource: AuthDataSourceToken(client: interceptedClient),
+        storage: TokenStorageSP(sharedPreferences: sharedPreferences),
+      ),
+    );
+
+    final pokemonRepository = PokemonRepositoryImpl(
+      PokemonDataSourceNetwork(interceptedClient),
+    );
 
     return Dependencies(
       sharedPreferences: sharedPreferences,
+      client: interceptedClient,
+      authBloc: authBloc,
+      pokemonRepository: pokemonRepository,
     );
   }
 
@@ -41,7 +81,6 @@ final class InitializationProcessor {
     final stopwatch = Stopwatch()..start();
 
     logger.info('Initializing dependencies...');
-    // initialize dependencies
     final dependencies = await _initDependencies();
     logger.info('Dependencies initialized');
 

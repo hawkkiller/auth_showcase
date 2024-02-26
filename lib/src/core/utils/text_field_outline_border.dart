@@ -16,7 +16,7 @@ class TextFieldOutlineBorder extends MaterialStateOutlineInputBorder {
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide(
         color: isFocused ? scheme.primary : scheme.outline,
-        width: 1.3,
+        width: 1.5,
       ),
     );
   }

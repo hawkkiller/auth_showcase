@@ -3,18 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizzle_starter/src/core/localization/localization.dart';
 import 'package:sizzle_starter/src/core/router/routes.dart';
-
-const _colorScheme = ColorScheme.light(
-  primary: Color(0xFF4C7EDE),
-  outline: Color(0xFFE2E2E2),
-  onSurface: Color(0xFF5D5E64),
-  onBackground: Color(0xFF141319),
-);
+import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
+import 'package:sizzle_starter/src/feature/auth/widget/auth_scope.dart';
 
 final _themeData = ThemeData(
   useMaterial3: true,
-  colorScheme: _colorScheme,
   textTheme: GoogleFonts.rubikTextTheme(),
+  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
 );
 
 /// {@template material_context}
@@ -43,11 +38,26 @@ class _MaterialContextState extends State<MaterialContext> {
     _router = GoRouter(
       initialLocation: '/login',
       routes: $appRoutes,
+      redirect: (context, state) {
+        final scope = AuthScope.of(context);
+        final loggingIn = state.matchedLocation == '/login';
+
+        if (scope.status == AuthenticationStatus.unauthenticated) {
+          return '/login';
+        }
+
+        if (loggingIn) {
+          return '/dashboard';
+        }
+
+        return null;
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         key: MaterialContext._globalKey,
         theme: _themeData,
         routerConfig: _router,
