@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:sizzle_starter/src/core/components/rest_client/rest_client.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/fake_http_client.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/token_expirer_helper.dart';
 
 /// Dummy [AuthorizationClient] that always returns true
 class AuthorizationClientToken implements AuthorizationClient<Token> {
@@ -14,10 +14,12 @@ class AuthorizationClientToken implements AuthorizationClient<Token> {
   AuthorizationClientToken(this._client);
 
   @override
-  FutureOr<bool> isRefreshTokenValid(Token token) => !expireRefresh;
+  FutureOr<bool> isRefreshTokenValid(Token token) =>
+      !TokenExpirerHelper().expireRefresh;
 
   @override
-  FutureOr<bool> isAccessTokenValid(Token token) => !expireAccess;
+  FutureOr<bool> isAccessTokenValid(Token token) =>
+      !TokenExpirerHelper().expireAccess;
 
   @override
   Future<Token> refresh(Token token) async {

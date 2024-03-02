@@ -4,7 +4,7 @@ import 'package:http/http.dart';
 import 'package:intercepted_client/intercepted_client.dart';
 import 'package:sizzle_starter/src/core/components/rest_client/rest_client.dart';
 import 'package:sizzle_starter/src/core/utils/retry_request_mixin.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/fake_http_client.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/token_expirer_helper.dart';
 
 /// Token is a simple class that holds the access and refresh token
 class Token {
@@ -120,7 +120,6 @@ class AuthInterceptor extends SequentialHttpInterceptor
 
     // If token is not valid and can be refreshed, then the token is refreshed
     if (await authorizationClient.isRefreshTokenValid(token)) {
-      expireAccess = false;
       token = await authorizationClient.refresh(token);
       await tokenStorage.save(token);
 
@@ -133,6 +132,10 @@ class AuthInterceptor extends SequentialHttpInterceptor
     // If token is not valid and cannot be refreshed,
     // then user should be logged out
     await tokenStorage.clear();
+    TokenExpirerHelper().loggedOut(
+      'User was logged out during the request interception, '
+      'because the token is not valid and cannot be refreshed',
+    );
 
     return handler.rejectRequest(
       const RevokeTokenException('Token is not valid and cannot be refreshed'),
@@ -169,11 +172,15 @@ class AuthInterceptor extends SequentialHttpInterceptor
     if (tokenFromHeaders == token.accessToken) {
       if (await authorizationClient.isRefreshTokenValid(token)) {
         token = await authorizationClient.refresh(token);
+        TokenExpirerHelper().refreshed();
         await tokenStorage.save(token);
       } else {
+        TokenExpirerHelper().loggedOut(
+          'User was logged out during the response interception, '
+          'because the token is not valid and cannot be refreshed',
+        );
         // If token cannot be refreshed, then user should be logged out
         await tokenStorage.clear();
-        expireRefresh = false;
         return handler.rejectResponse(
           const RevokeTokenException(
             'Token is not valid and cannot be refreshed',

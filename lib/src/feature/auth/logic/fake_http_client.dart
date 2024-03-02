@@ -2,18 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
-
-/// This variable controls the expiration of the access token.
-///
-/// If it is expired, then on the next request to the server, the server will
-/// return a 401 status code, which will force the client to refresh token.
-bool expireAccess = false;
-
-/// This variable controls the expiration of the refresh token.
-///
-/// If it is expired, then on the next request to the server, the server will
-/// return a 401 status code, which will force the client to log in again.
-bool expireRefresh = false;
+import 'package:sizzle_starter/src/feature/auth/logic/token_expirer_helper.dart';
 
 /// {@template fake_http_client}
 /// A fake HTTP client, that returns mock responses.
@@ -25,6 +14,8 @@ class FakeHttpClient extends MockClient {
   FakeHttpClient() : super(_handler);
 
   static Future<Response> _handler(Request request) async {
+    final helper = TokenExpirerHelper();
+
     if (request.url.path == '/login') {
       return Response(
         '{"access_token": "abcd", "refresh_token": "abcd"}',
@@ -35,7 +26,7 @@ class FakeHttpClient extends MockClient {
 
     if (request.url.path == '/refresh') {
       // if the refresh token is expired, return 401
-      if (expireRefresh) {
+      if (helper.expireRefresh) {
         return Response(
           'Unauthorized',
           401,
@@ -50,7 +41,9 @@ class FakeHttpClient extends MockClient {
       );
     }
 
-    if (expireAccess || expireRefresh) {
+    // this is not how things look like in real world, but
+    // for the sake of simplicity, we will use this approach
+    if (helper.expireAccess || helper.expireRefresh) {
       await Future<void>.delayed(const Duration(seconds: 2));
       return Response(
         'Unauthorized',
