@@ -12,24 +12,24 @@ import 'dart:async';
 /// the [expireAccess] and [expireRefresh] variables to `true` and
 /// then to `false` after corresponding actions are taken.
 /// {@endtemplate}
-class TokenExpirerHelper {
+class ShowcaseHelper {
   /// {@macro token_expirer_helper}
-  factory TokenExpirerHelper() => _instance;
+  factory ShowcaseHelper() => _instance;
 
-  TokenExpirerHelper._();
+  ShowcaseHelper._();
 
-  static final TokenExpirerHelper _instance = TokenExpirerHelper._();
+  static final ShowcaseHelper _instance = ShowcaseHelper._();
 
   /// The stream that notifies about the changes in the token expiration.
   Stream<String> get changes => _changes.stream;
   final _changes = StreamController<String>.broadcast();
 
   /// This method is called when the access token is refreshed.
-  void refreshed() {
+  void refreshed(String reason) {
     expireAccess = false;
     expireRefresh = false;
 
-    _changes.add('Token Pair was refreshed');
+    _changes.add(reason);
   }
 
   /// This method is called when the user logs out.
@@ -37,6 +37,11 @@ class TokenExpirerHelper {
     expireAccess = false;
     expireRefresh = false;
 
+    _changes.add(reason);
+  }
+
+  /// This method is called when the request was retried.
+  void requestRetry(String reason) {
     _changes.add(reason);
   }
 

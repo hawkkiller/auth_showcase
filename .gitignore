@@ -141,3 +141,4 @@ pubspec.lock
 
 # FVM
 .fvm/flutter_sdk
+.firebase

@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizzle_starter/src/core/localization/localization.dart';
 import 'package:sizzle_starter/src/core/router/routes.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/token_expirer_helper.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 import 'package:sizzle_starter/src/feature/auth/widget/auth_scope.dart';
 
 final _themeData = ThemeData(
@@ -89,7 +89,7 @@ class _ExpirerListenerState extends State<_ExpirerListener> {
   @override
   void initState() {
     super.initState();
-    _subscription = TokenExpirerHelper().changes.listen((event) {
+    _subscription = ShowcaseHelper().changes.listen((event) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(event),

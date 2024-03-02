@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/token_expirer_helper.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 import 'package:sizzle_starter/src/feature/auth/widget/auth_scope.dart';
 import 'package:sizzle_starter/src/feature/dashboard/bloc/pokemon_bloc.dart';
 import 'package:sizzle_starter/src/feature/initialization/widget/dependencies_scope.dart';
@@ -55,25 +55,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Material(
                       type: MaterialType.transparency,
                       child: StreamBuilder<void>(
-                        stream: TokenExpirerHelper().changes,
+                        stream: ShowcaseHelper().changes,
                         builder: (context, snapshot) => Row(
                           children: [
                             const Text('Expire access'),
                             Switch(
-                              value: TokenExpirerHelper().expireAccess,
+                              value: ShowcaseHelper().expireAccess,
                               onChanged: (value) {
                                 setState(
                                   () =>
-                                      TokenExpirerHelper().expireAccess = value,
+                                      ShowcaseHelper().expireAccess = value,
                                 );
                               },
                             ),
                             const Text('Expire refresh'),
                             Switch(
-                              value: TokenExpirerHelper().expireRefresh,
+                              value: ShowcaseHelper().expireRefresh,
                               onChanged: (value) {
                                 setState(
-                                  () => TokenExpirerHelper().expireRefresh =
+                                  () => ShowcaseHelper().expireRefresh =
                                       value,
                                 );
                               },

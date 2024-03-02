@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/token_expirer_helper.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 
 /// {@template fake_http_client}
 /// A fake HTTP client, that returns mock responses.
@@ -14,7 +14,7 @@ class FakeHttpClient extends MockClient {
   FakeHttpClient() : super(_handler);
 
   static Future<Response> _handler(Request request) async {
-    final helper = TokenExpirerHelper();
+    final helper = ShowcaseHelper();
 
     if (request.url.path == '/login') {
       return Response(

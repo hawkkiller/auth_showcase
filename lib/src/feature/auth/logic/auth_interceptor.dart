@@ -4,7 +4,7 @@ import 'package:http/http.dart';
 import 'package:intercepted_client/intercepted_client.dart';
 import 'package:sizzle_starter/src/core/components/rest_client/rest_client.dart';
 import 'package:sizzle_starter/src/core/utils/retry_request_mixin.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/token_expirer_helper.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 
 /// Token is a simple class that holds the access and refresh token
 class Token {
@@ -122,6 +122,9 @@ class AuthInterceptor extends SequentialHttpInterceptor
     if (await authorizationClient.isRefreshTokenValid(token)) {
       token = await authorizationClient.refresh(token);
       await tokenStorage.save(token);
+      ShowcaseHelper().refreshed(
+        'Token was refreshed during the request interception',
+      );
 
       final headers = _buildHeaders(token);
       request.headers.addAll(headers);
@@ -132,7 +135,7 @@ class AuthInterceptor extends SequentialHttpInterceptor
     // If token is not valid and cannot be refreshed,
     // then user should be logged out
     await tokenStorage.clear();
-    TokenExpirerHelper().loggedOut(
+    ShowcaseHelper().loggedOut(
       'User was logged out during the request interception, '
       'because the token is not valid and cannot be refreshed',
     );
@@ -172,10 +175,12 @@ class AuthInterceptor extends SequentialHttpInterceptor
     if (tokenFromHeaders == token.accessToken) {
       if (await authorizationClient.isRefreshTokenValid(token)) {
         token = await authorizationClient.refresh(token);
-        TokenExpirerHelper().refreshed();
+        ShowcaseHelper().refreshed(
+          'Token was refreshed during the response interception',
+        );
         await tokenStorage.save(token);
       } else {
-        TokenExpirerHelper().loggedOut(
+        ShowcaseHelper().loggedOut(
           'User was logged out during the response interception, '
           'because the token is not valid and cannot be refreshed',
         );
@@ -192,6 +197,10 @@ class AuthInterceptor extends SequentialHttpInterceptor
     // If token is different, then the token is already refreshed
     // and the request should be made again
     final newResponse = await retryRequest(response, retryClient);
+    ShowcaseHelper().requestRetry(
+      'Request was retried after the token '
+      'was refreshed in response interceptor',
+    );
 
     return handler.resolveResponse(newResponse);
   }
