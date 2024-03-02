@@ -88,6 +88,5 @@ final class _AuthInherited extends InheritedWidget {
   });
 
   @override
-  bool updateShouldNotify(covariant _AuthInherited oldWidget) =>
-      true;
+  bool updateShouldNotify(covariant _AuthInherited oldWidget) => true;
 }

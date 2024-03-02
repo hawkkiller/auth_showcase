@@ -197,9 +197,16 @@ class AuthInterceptor extends SequentialHttpInterceptor
   }
 }
 
+/// {@template revoke_token_exception}
+/// Revoke token exception
+///
+/// This exception is thrown when the token is not valid and cannot be refreshed
+/// {@endtemplate}
 class RevokeTokenException implements Exception {
+  /// Create a [RevokeTokenException]
   const RevokeTokenException(this.message);
 
+  /// The message of the exception
   final String message;
 
   @override
