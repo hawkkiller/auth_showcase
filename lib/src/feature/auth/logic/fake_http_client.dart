@@ -25,6 +25,7 @@ class FakeHttpClient extends MockClient {
     }
 
     if (request.url.path == '/refresh') {
+      await Future<void>.delayed(const Duration(seconds: 1));
       // if the refresh token is expired, return 401
       if (helper.expireRefresh) {
         return Response(
@@ -41,10 +42,8 @@ class FakeHttpClient extends MockClient {
       );
     }
 
-    // this is not how things look like in real world, but
-    // for the sake of simplicity, we will use this approach
     if (helper.expireAccess || helper.expireRefresh) {
-      await Future<void>.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 1));
       return Response(
         'Unauthorized',
         401,
