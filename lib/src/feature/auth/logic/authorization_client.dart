@@ -7,11 +7,11 @@ import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 
 /// Dummy [AuthorizationClient] that always returns true
-class AuthorizationClientToken implements AuthorizationClient<Token> {
+class DummyAuthorizationClientT implements AuthorizationClient<Token> {
   final Client _client;
 
   /// {@macro authorization_client}
-  AuthorizationClientToken(this._client);
+  DummyAuthorizationClientT(this._client);
 
   @override
   FutureOr<bool> isRefreshTokenValid(Token token) =>
@@ -40,6 +40,6 @@ class AuthorizationClientToken implements AuthorizationClient<Token> {
       return Token(aToken, rToken);
     }
 
-    throw FormatException('Invalid response $json');
+    throw const RevokeTokenException('Invalid token');
   }
 }

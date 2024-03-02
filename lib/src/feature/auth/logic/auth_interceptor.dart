@@ -174,11 +174,21 @@ class AuthInterceptor extends SequentialHttpInterceptor
     // If token is the same, refresh the token
     if (tokenFromHeaders == token.accessToken) {
       if (await authorizationClient.isRefreshTokenValid(token)) {
-        token = await authorizationClient.refresh(token);
-        ShowcaseHelper().refreshed(
-          'Token was refreshed during the response interception',
-        );
-        await tokenStorage.save(token);
+        try {
+          token = await authorizationClient.refresh(token);
+          ShowcaseHelper().refreshed(
+            'Token was refreshed during the response interception',
+          );
+          await tokenStorage.save(token);
+        } on RevokeTokenException catch (e) {
+          // If token cannot be refreshed, then user should be logged out
+          await tokenStorage.clear();
+          ShowcaseHelper().loggedOut(
+            'User was logged out during the response interception, '
+            'because the token was not valid or could not be refreshed',
+          );
+          return handler.rejectResponse(e);
+        }
       } else {
         ShowcaseHelper().loggedOut(
           'User was logged out during the response interception, '
@@ -204,20 +214,4 @@ class AuthInterceptor extends SequentialHttpInterceptor
 
     return handler.resolveResponse(newResponse);
   }
-}
-
-/// {@template revoke_token_exception}
-/// Revoke token exception
-///
-/// This exception is thrown when the token is not valid and cannot be refreshed
-/// {@endtemplate}
-class RevokeTokenException implements Exception {
-  /// Create a [RevokeTokenException]
-  const RevokeTokenException(this.message);
-
-  /// The message of the exception
-  final String message;
-
-  @override
-  String toString() => 'RevokeTokenException: $message';
 }

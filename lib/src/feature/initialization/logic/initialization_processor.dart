@@ -36,7 +36,7 @@ final class InitializationProcessor {
 
     final authInterceptor = AuthInterceptor(
       tokenStorage: TokenStorageSP(sharedPreferences: sharedPreferences),
-      authorizationClient: AuthorizationClientToken(fakeClient),
+      authorizationClient: DummyAuthorizationClientT(fakeClient),
       retryClient: fakeClient,
     );
 
