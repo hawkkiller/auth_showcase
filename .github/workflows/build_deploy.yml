@@ -64,3 +64,5 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_AUTHSHOWCASE }}"
           channelId: live
           projectId: authshowcase
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
