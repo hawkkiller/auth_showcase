@@ -1,16 +1,20 @@
-// ignore_for_file: invalid_use_of_visible_for_testing_member
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizzle_starter/src/feature/auth/data/auth_repository.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
 
+/// Set the state of the bloc
+mixin SetStateMixin<S> on Emittable<S> {
+  /// Change the state of the bloc
+  void setState(S state) => emit(state);
+}
+
 /// AuthBloc
-final class AuthBloc extends Bloc<AuthEvent, AuthState> {
+final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
   final AuthRepository _authRepository;
 
   /// Create an [AuthBloc]
   ///
-  /// This specializes required [initialState] as it should be preloaded.
+  /// This specializes required initialState as it should be preloaded.
   AuthBloc(
     super.initialState, {
     required AuthRepository authRepository,
@@ -26,7 +30,7 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     // emit new state when the authentication status changes
     authStatusSource.authStatus.listen((event) {
-      emit(AuthState.idle(status: event));
+      setState(AuthState.idle(status: event));
     });
   }
 
