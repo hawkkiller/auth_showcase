@@ -63,8 +63,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               value: ShowcaseHelper().expireAccess,
                               onChanged: (value) {
                                 setState(
-                                  () =>
-                                      ShowcaseHelper().expireAccess = value,
+                                  () => ShowcaseHelper().expireAccess = value,
                                 );
                               },
                             ),
@@ -73,8 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               value: ShowcaseHelper().expireRefresh,
                               onChanged: (value) {
                                 setState(
-                                  () => ShowcaseHelper().expireRefresh =
-                                      value,
+                                  () => ShowcaseHelper().expireRefresh = value,
                                 );
                               },
                             ),
