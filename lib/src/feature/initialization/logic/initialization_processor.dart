@@ -34,9 +34,11 @@ final class InitializationProcessor {
     final sharedPreferences = await SharedPreferences.getInstance();
     final fakeClient = FakeHttpClient();
 
+    final storage = TokenStorageSP(sharedPreferences: sharedPreferences);
+
     final authInterceptor = AuthInterceptor(
-      tokenStorage: TokenStorageSP(sharedPreferences: sharedPreferences),
-      authorizationClient: DummyAuthorizationClientT(fakeClient),
+      tokenStorage: storage,
+      authorizationClient: DummyAuthorizationClient(fakeClient),
       retryClient: fakeClient,
     );
 
@@ -51,8 +53,8 @@ final class InitializationProcessor {
       AuthState.idle(status: status),
       authStatusSource: authInterceptor,
       authRepository: AuthRepositoryImpl(
-        dataSource: AuthDataSourceToken(client: interceptedClient),
-        storage: TokenStorageSP(sharedPreferences: sharedPreferences),
+        dataSource: AuthDataSourceNetwork(client: interceptedClient),
+        storage: storage,
       ),
     );
 

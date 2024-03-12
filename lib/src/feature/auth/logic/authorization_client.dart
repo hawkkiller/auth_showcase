@@ -7,11 +7,11 @@ import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 
 /// Dummy [AuthorizationClient] that always returns true
-class DummyAuthorizationClientT implements AuthorizationClient<Token> {
+class DummyAuthorizationClient implements AuthorizationClient<Token> {
   final Client _client;
 
   /// {@macro authorization_client}
-  DummyAuthorizationClientT(this._client);
+  DummyAuthorizationClient(this._client);
 
   @override
   FutureOr<bool> isRefreshTokenValid(Token token) =>

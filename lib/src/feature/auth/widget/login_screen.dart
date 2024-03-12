@@ -79,9 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: _PasswordTextField(
-                  controller: _passwordController,
-                ),
+                child: _PasswordTextField(controller: _passwordController),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 24),
@@ -89,6 +87,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 48,
                   child: FilledButton(
                     onPressed: () {
+                      // Adds the [AuthEvent.signInWithEmailAndPassword]
+                      // event to the [AuthBloc]
                       AuthScope.of(context).signInWithEmailAndPassword(
                         _emailController.text,
                         _passwordController.text,

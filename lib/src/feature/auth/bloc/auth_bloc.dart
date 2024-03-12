@@ -10,14 +10,14 @@ mixin SetStateMixin<S> on Emittable<S> {
 
 /// AuthBloc
 final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
-  final AuthRepository _authRepository;
+  final AuthRepository<Object> _authRepository;
 
   /// Create an [AuthBloc]
   ///
   /// This specializes required initialState as it should be preloaded.
   AuthBloc(
     super.initialState, {
-    required AuthRepository authRepository,
+    required AuthRepository<Object> authRepository,
     required AuthStatusSource authStatusSource,
   }) : _authRepository = authRepository {
     on<AuthEvent>(
@@ -29,8 +29,12 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
     );
 
     // emit new state when the authentication status changes
-    authStatusSource.authStatus.listen((event) {
-      setState(AuthState.idle(status: event));
+    authStatusSource.authStatus
+        .map(($status) => AuthState.idle(status: $status))
+        .listen(($state) {
+      if ($state != state) {
+        setState($state);
+      }
     });
   }
 
@@ -47,7 +51,7 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
       emit(
         AuthState.error(
           status: AuthenticationStatus.unauthenticated,
-          message: e.toString(),
+          error: e,
         ),
       );
       onError(e, stackTrace);
@@ -72,7 +76,7 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
       emit(
         AuthState.error(
           status: AuthenticationStatus.unauthenticated,
-          message: e.toString(),
+          error: e,
         ),
       );
       onError(e, stackTrace);
@@ -128,7 +132,7 @@ sealed class AuthState {
 
   const factory AuthState.error({
     required AuthenticationStatus status,
-    required String message,
+    required Object error,
   }) = _AuthStateError;
 }
 
@@ -167,10 +171,10 @@ final class _AuthStateProcessing extends AuthState {
 }
 
 final class _AuthStateError extends AuthState {
-  final Object message;
+  final Object error;
 
   const _AuthStateError({
-    required this.message,
+    required this.error,
     required super.status,
   });
 
@@ -180,12 +184,12 @@ final class _AuthStateError extends AuthState {
 
     return other is _AuthStateError &&
         other.status == status &&
-        other.message == message;
+        other.error == error;
   }
 
   @override
-  int get hashCode => Object.hashAll([status, message]);
+  int get hashCode => Object.hashAll([status, error]);
 
   @override
-  String toString() => '_AuthStateError(status: $status, message: $message)';
+  String toString() => '_AuthStateError(status: $status, message: $error)';
 }

@@ -1,30 +1,29 @@
 import 'package:sizzle_starter/src/core/components/rest_client/rest_client.dart';
 import 'package:sizzle_starter/src/feature/auth/data/auth_data_source.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
 
 /// AuthRepository
-abstract interface class AuthRepository {
+abstract interface class AuthRepository<T> {
   /// Sign in with email and password
-  Future<Token> signInWithEmailAndPassword(String email, String password);
+  Future<T> signInWithEmailAndPassword(String email, String password);
 
   /// Sign out
   Future<void> signOut();
 }
 
 /// AuthRepositoryImpl
-final class AuthRepositoryImpl implements AuthRepository {
-  final AuthDataSource<Token> _dataSource;
-  final TokenStorage<Token> _storage;
+final class AuthRepositoryImpl<T> implements AuthRepository<T> {
+  final AuthDataSource<T> _dataSource;
+  final TokenStorage<T> _storage;
 
   /// Create an [AuthRepositoryImpl]
   const AuthRepositoryImpl({
-    required AuthDataSource<Token> dataSource,
-    required TokenStorage<Token> storage,
+    required AuthDataSource<T> dataSource,
+    required TokenStorage<T> storage,
   })  : _dataSource = dataSource,
         _storage = storage;
 
   @override
-  Future<Token> signInWithEmailAndPassword(
+  Future<T> signInWithEmailAndPassword(
     String email,
     String password,
   ) async {
