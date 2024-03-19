@@ -1,5 +1,20 @@
 import 'dart:async';
 
+/// The client that refreshes the Auth token using the refresh token.
+abstract interface class AuthorizationClient<T> {
+  /// Check if the token can be refreshed.
+  FutureOr<bool> isRefreshTokenValid(T token);
+
+  /// Check if the token is valid.
+  FutureOr<bool> isAccessTokenValid(T token);
+
+  /// Refreshes the token.
+  ///
+  /// This method should throw the [RevokeTokenException] if token
+  /// cannot be refreshed.
+  Future<T> refresh(T token);
+}
+
 /// {@template revoke_token_exception}
 /// Revoke token exception
 ///
@@ -14,19 +29,4 @@ class RevokeTokenException implements Exception {
 
   @override
   String toString() => 'RevokeTokenException: $message';
-}
-
-/// The client that refreshes the Auth token using the refresh token.
-abstract interface class AuthorizationClient<T> {
-  /// Check if the token can be refreshed.
-  FutureOr<bool> isRefreshTokenValid(T token);
-
-  /// Check if the token is valid.
-  FutureOr<bool> isAccessTokenValid(T token);
-
-  /// Refreshes token pair
-  ///
-  /// Should throw [RevokeTokenException] if token pair
-  /// cannot be refreshed.
-  Future<T> refresh(T token);
 }

@@ -43,7 +43,9 @@ class AuthInterceptor extends SequentialHttpInterceptor
     required this.tokenStorage,
     required this.authorizationClient,
     Client? retryClient,
-  }) : retryClient = retryClient ?? Client() {
+    Token? token,
+  })  : retryClient = retryClient ?? Client(),
+        _token = token {
     tokenStorage.getStream().listen(_updateAuthenticationStatus);
   }
 
@@ -60,19 +62,6 @@ class AuthInterceptor extends SequentialHttpInterceptor
 
   @override
   Stream<AuthenticationStatus> get authStatus => _authStatusController.stream;
-
-  /// Initialize the AuthInterceptor
-  ///
-  /// This method should be called once when the app starts
-  /// to preload the token from the storage
-  Future<AuthenticationStatus> init() async {
-    final token = await _loadToken();
-    _updateAuthenticationStatus(token);
-
-    return token == null
-        ? AuthenticationStatus.unauthenticated
-        : AuthenticationStatus.authenticated;
-  }
 
   Future<Token?> _loadToken() async => _token ??= await tokenStorage.load();
 
@@ -122,7 +111,7 @@ class AuthInterceptor extends SequentialHttpInterceptor
     if (await authorizationClient.isRefreshTokenValid(token)) {
       token = await authorizationClient.refresh(token);
       await tokenStorage.save(token);
-      ShowcaseHelper().refreshed(
+      ShowcaseHelper().tokenRefreshed(
         'Token was refreshed during the request interception',
       );
 
@@ -135,7 +124,7 @@ class AuthInterceptor extends SequentialHttpInterceptor
     // If token is not valid and cannot be refreshed,
     // then user should be logged out
     await tokenStorage.clear();
-    ShowcaseHelper().loggedOut(
+    ShowcaseHelper().userLoggedOut(
       'User was logged out during the request interception, '
       'because the token is not valid and cannot be refreshed',
     );
@@ -176,21 +165,21 @@ class AuthInterceptor extends SequentialHttpInterceptor
       if (await authorizationClient.isRefreshTokenValid(token)) {
         try {
           token = await authorizationClient.refresh(token);
-          ShowcaseHelper().refreshed(
+          ShowcaseHelper().tokenRefreshed(
             'Token was refreshed during the response interception',
           );
           await tokenStorage.save(token);
         } on RevokeTokenException catch (e) {
           // If token cannot be refreshed, then user should be logged out
           await tokenStorage.clear();
-          ShowcaseHelper().loggedOut(
+          ShowcaseHelper().userLoggedOut(
             'User was logged out during the response interception, '
             'because the token was not valid or could not be refreshed',
           );
           return handler.rejectResponse(e);
         }
       } else {
-        ShowcaseHelper().loggedOut(
+        ShowcaseHelper().userLoggedOut(
           'User was logged out during the response interception, '
           'because the token is not valid and cannot be refreshed',
         );
@@ -207,7 +196,7 @@ class AuthInterceptor extends SequentialHttpInterceptor
     // If token is different, then the token is already refreshed
     // and the request should be made again
     final newResponse = await retryRequest(response, retryClient);
-    ShowcaseHelper().requestRetry(
+    ShowcaseHelper().requestRetried(
       'Request was retried after the token '
       'was refreshed in response interceptor',
     );

@@ -33,13 +33,14 @@ final class InitializationProcessor {
   Future<Dependencies> _initDependencies() async {
     final sharedPreferences = await SharedPreferences.getInstance();
     final fakeClient = FakeHttpClient();
-
     final storage = TokenStorageSP(sharedPreferences: sharedPreferences);
+    final token = await storage.load();
 
     final authInterceptor = AuthInterceptor(
       tokenStorage: storage,
       authorizationClient: DummyAuthorizationClient(fakeClient),
       retryClient: fakeClient,
+      token: token,
     );
 
     final interceptedClient = InterceptedClient(
@@ -47,10 +48,12 @@ final class InitializationProcessor {
       interceptors: [authInterceptor],
     );
 
-    final status = await authInterceptor.init();
-
     final authBloc = AuthBloc(
-      AuthState.idle(status: status),
+      AuthState.idle(
+        status: token != null
+            ? AuthenticationStatus.authenticated
+            : AuthenticationStatus.unauthenticated,
+      ),
       authStatusSource: authInterceptor,
       authRepository: AuthRepositoryImpl(
         dataSource: AuthDataSourceNetwork(client: interceptedClient),
