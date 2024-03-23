@@ -54,30 +54,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Material(
                       type: MaterialType.transparency,
-                      child: StreamBuilder<void>(
-                        stream: ShowcaseHelper().changes,
-                        builder: (context, snapshot) => Row(
-                          children: [
-                            const Text('Expire access'),
-                            Switch(
-                              value: ShowcaseHelper().expireAccess,
-                              onChanged: (value) {
-                                setState(
-                                  () => ShowcaseHelper().expireAccess = value,
-                                );
-                              },
-                            ),
-                            const Text('Expire refresh'),
-                            Switch(
-                              value: ShowcaseHelper().expireRefresh,
-                              onChanged: (value) {
-                                setState(
-                                  () => ShowcaseHelper().expireRefresh = value,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+                      child: Row(
+                        children: [
+                          const Text('Expire access'),
+                          Switch(
+                            value: ShowcaseHelper().expireAccess,
+                            onChanged: (value) {
+                              setState(
+                                () => ShowcaseHelper().expireAccess = value,
+                              );
+                            },
+                          ),
+                          const Text('Expire refresh'),
+                          Switch(
+                            value: ShowcaseHelper().expireRefresh,
+                            onChanged: (value) {
+                              setState(
+                                () => ShowcaseHelper().expireRefresh = value,
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),

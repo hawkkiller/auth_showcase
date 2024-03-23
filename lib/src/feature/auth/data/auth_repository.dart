@@ -1,8 +1,9 @@
 import 'package:sizzle_starter/src/core/components/rest_client/rest_client.dart';
 import 'package:sizzle_starter/src/feature/auth/data/auth_data_source.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
 
 /// AuthRepository
-abstract interface class AuthRepository<T> {
+abstract interface class AuthRepository<T> implements AuthStatusSource {
   /// Sign in with email and password
   Future<T> signInWithEmailAndPassword(String email, String password);
 
@@ -38,4 +39,11 @@ final class AuthRepositoryImpl<T> implements AuthRepository<T> {
     await _dataSource.signOut();
     await _storage.clear();
   }
+
+  @override
+  Stream<AuthenticationStatus> get authStatus => _storage.getStream().map(
+        (token) => token != null
+            ? AuthenticationStatus.authenticated
+            : AuthenticationStatus.unauthenticated,
+      );
 }

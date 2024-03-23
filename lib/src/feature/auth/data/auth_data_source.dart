@@ -55,10 +55,8 @@ final class AuthDataSourceNetwork implements AuthDataSource<Token> {
       // Check if response contains access_token and refresh_token
       if (body
           case {
-            'data': {
-              'access_token': final String accessToken,
-              'refresh_token': final String refreshToken,
-            }
+            'access_token': final String accessToken,
+            'refresh_token': final String refreshToken,
           }) {
         return Token(accessToken, refreshToken);
       }

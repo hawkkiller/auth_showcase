@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizzle_starter/src/core/localization/localization.dart';
 import 'package:sizzle_starter/src/core/router/routes.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 import 'package:sizzle_starter/src/feature/auth/widget/auth_scope.dart';
 
 final _themeData = ThemeData(
@@ -69,42 +66,7 @@ class _MaterialContextState extends State<MaterialContext> {
         builder: (context, child) => MediaQuery.withClampedTextScaling(
           minScaleFactor: 1.0,
           maxScaleFactor: 2.0,
-          child: _ExpirerListener(child: child!),
+          child: child!,
         ),
       );
-}
-
-class _ExpirerListener extends StatefulWidget {
-  const _ExpirerListener({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_ExpirerListener> createState() => _ExpirerListenerState();
-}
-
-class _ExpirerListenerState extends State<_ExpirerListener> {
-  StreamSubscription<void>? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _subscription = ShowcaseHelper().changes.listen((event) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(event),
-          duration: const Duration(seconds: 5),
-        ),
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }

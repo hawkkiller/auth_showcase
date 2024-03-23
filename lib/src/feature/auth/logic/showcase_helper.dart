@@ -1,6 +1,3 @@
-// ignore_for_file: close_sinks
-import 'dart:async';
-
 /// {@template token_expirer_helper}
 /// Singleton that is used to simulate the token expiration
 ///
@@ -30,29 +27,4 @@ class ShowcaseHelper {
   /// If it is expired, then on the next request to the server, the server will
   /// return a 401 status code, which will force the client to log in again.
   bool expireRefresh = false;
-
-  /// The stream that notifies about the changes in the token expiration.
-  Stream<String> get changes => _changes.stream;
-  final _changes = StreamController<String>.broadcast();
-
-  /// This method is called when the access token is refreshed.
-  void tokenRefreshed(String reason) {
-    expireAccess = false;
-    expireRefresh = false;
-
-    _changes.add(reason);
-  }
-
-  /// This method is called when the user logs out.
-  void userLoggedOut(String reason) {
-    expireAccess = false;
-    expireRefresh = false;
-
-    _changes.add(reason);
-  }
-
-  /// This method is called when the request was retried.
-  void requestRetried(String reason) {
-    _changes.add(reason);
-  }
 }

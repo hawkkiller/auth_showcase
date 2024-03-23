@@ -58,6 +58,7 @@ dependencies:
   http: ^1.2.0
   google_fonts: ^6.1.0
   intercepted_client: ^0.0.1-dev.6
+  dart_jsonwebtoken: ^2.13.0
   
 dev_dependencies:
   # Testing

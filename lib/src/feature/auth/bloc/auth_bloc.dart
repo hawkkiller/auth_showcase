@@ -18,7 +18,6 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
   AuthBloc(
     super.initialState, {
     required AuthRepository<Object> authRepository,
-    required AuthStatusSource authStatusSource,
   }) : _authRepository = authRepository {
     on<AuthEvent>(
       (event, emit) => switch (event) {
@@ -29,7 +28,7 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
     );
 
     // emit new state when the authentication status changes
-    authStatusSource.authStatus
+    authRepository.authStatus
         .map(($status) => AuthState.idle(status: $status))
         .listen(($state) {
       if ($state != state) {

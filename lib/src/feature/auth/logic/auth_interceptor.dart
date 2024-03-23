@@ -4,7 +4,6 @@ import 'package:http/http.dart';
 import 'package:intercepted_client/intercepted_client.dart';
 import 'package:sizzle_starter/src/core/components/rest_client/rest_client.dart';
 import 'package:sizzle_starter/src/core/utils/retry_request_mixin.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 
 /// Token is a simple class that holds the access and refresh token
 class Token {
@@ -35,9 +34,7 @@ abstract interface class AuthStatusSource {
 
 /// AuthInterceptor is used to add the Auth token to the request header
 /// and refreshes or clears the token if the request fails with a 401
-class AuthInterceptor extends SequentialHttpInterceptor
-    with RetryRequestMixin
-    implements AuthStatusSource {
+class AuthInterceptor extends SequentialHttpInterceptor with RetryRequestMixin {
   /// Create an Auth interceptor
   AuthInterceptor({
     required this.tokenStorage,
@@ -46,7 +43,7 @@ class AuthInterceptor extends SequentialHttpInterceptor
     Token? token,
   })  : retryClient = retryClient ?? Client(),
         _token = token {
-    tokenStorage.getStream().listen(_updateAuthenticationStatus);
+    tokenStorage.getStream().listen((newToken) => _token = newToken);
   }
 
   /// [Client] to retry the request
@@ -57,26 +54,13 @@ class AuthInterceptor extends SequentialHttpInterceptor
 
   /// [AuthorizationClient] to refresh the token
   final AuthorizationClient<Token> authorizationClient;
-  final _authStatusController = StreamController<AuthenticationStatus>();
   Token? _token;
 
-  @override
-  Stream<AuthenticationStatus> get authStatus => _authStatusController.stream;
-
-  Future<Token?> _loadToken() async => _token ??= await tokenStorage.load();
+  Future<Token?> _loadToken() async => _token;
 
   Map<String, String> _buildHeaders(Token token) => {
         'Authorization': 'Bearer ${token.accessToken}',
       };
-
-  void _updateAuthenticationStatus(Token? token) {
-    _token = token;
-    _authStatusController.add(
-      token == null
-          ? AuthenticationStatus.unauthenticated
-          : AuthenticationStatus.authenticated,
-    );
-  }
 
   String? _extractTokenFromHeaders(Map<String, String> headers) {
     final authHeader = headers['Authorization'];
@@ -87,18 +71,25 @@ class AuthInterceptor extends SequentialHttpInterceptor
     return authHeader.substring(7);
   }
 
+  // 1.0
   @override
   Future<void> interceptRequest(
     BaseRequest request,
     RequestHandler handler,
   ) async {
+    // 1.1
     var token = await _loadToken();
 
-    // If token is null, then the request is made without the token
+    // If token is null, then the request is rejected
     if (token == null) {
-      return handler.next(request);
+      return handler.rejectRequest(
+        const RevokeTokenException(
+          'Token is not valid and cannot be refreshed',
+        ),
+      );
     }
 
+    // 1.2
     // If token is valid, then the request is made with the token
     if (await authorizationClient.isAccessTokenValid(token)) {
       final headers = _buildHeaders(token);
@@ -107,82 +98,107 @@ class AuthInterceptor extends SequentialHttpInterceptor
       return handler.next(request);
     }
 
+    // 1.3
     // If token is not valid and can be refreshed, then the token is refreshed
     if (await authorizationClient.isRefreshTokenValid(token)) {
-      token = await authorizationClient.refresh(token);
-      await tokenStorage.save(token);
-      ShowcaseHelper().tokenRefreshed(
-        'Token was refreshed during the request interception',
-      );
+      try {
+        // 1.4
+        // Even if refresh token seems to be valid from the client side,
+        // it may be revoked / banned / deleted on the server side, so
+        // the following method can throw the error.
+        token = await authorizationClient.refresh(token);
+        await tokenStorage.save(token);
 
-      final headers = _buildHeaders(token);
-      request.headers.addAll(headers);
+        final headers = _buildHeaders(token);
+        request.headers.addAll(headers);
 
-      return handler.next(request);
+        return handler.next(request);
+        // If authorization client decides that the token is no longer
+        // valid, it throws [RevokeTokenException] and user should be logged out
+      } on RevokeTokenException catch (e) {
+        // 1.5
+        // If token cannot be refreshed, then user should be logged out
+        await tokenStorage.clear();
+        return handler.rejectRequest(e);
+        // However, if another error occurs, like internet connection error,
+        // then we should not log out the user, but just reject the request
+      } on Object catch (e) {
+        // 1.6
+        return handler.rejectRequest(e);
+      }
     }
 
+    // 1.7
     // If token is not valid and cannot be refreshed,
     // then user should be logged out
     await tokenStorage.clear();
-    ShowcaseHelper().userLoggedOut(
-      'User was logged out during the request interception, '
-      'because the token is not valid and cannot be refreshed',
-    );
-
     return handler.rejectRequest(
       const RevokeTokenException('Token is not valid and cannot be refreshed'),
     );
   }
 
+  // 2.0
   @override
   Future<void> interceptResponse(
     StreamedResponse response,
     ResponseHandler handler,
   ) async {
+    // 2.1
     // If response is 401 (Unauthorized), then Access token is expired
     // and, if possible, should be refreshed
     if (response.statusCode != 401) {
       return handler.resolveResponse(response);
     }
 
+    // 2.2
     var token = await _loadToken();
 
     // If token is null, then reject the response
     if (token == null) {
-      return handler.resolveResponse(response);
+      return handler.rejectResponse(
+        const RevokeTokenException(
+          'Token is not valid and cannot be refreshed',
+        ),
+      );
     }
 
     final tokenFromHeaders = _extractTokenFromHeaders(
       response.request?.headers ?? const {},
     );
 
+    // If request does not have the token, then return the response
     if (tokenFromHeaders == null) {
       return handler.resolveResponse(response);
     }
 
+    // 2.3
     // If token is the same, refresh the token
     if (tokenFromHeaders == token.accessToken) {
+      // 2.4
       if (await authorizationClient.isRefreshTokenValid(token)) {
         try {
+          // 2.5
+          // Even if refresh token seems to be valid from the client side,
+          // it may be revoked / banned / deleted on the server side, so
+          // the following method can throw the error.
           token = await authorizationClient.refresh(token);
-          ShowcaseHelper().tokenRefreshed(
-            'Token was refreshed during the response interception',
-          );
           await tokenStorage.save(token);
+          // If authorization client decides that the token is no longer
+          // valid, it throws [RevokeTokenException] and user should be logged
+          // out
         } on RevokeTokenException catch (e) {
+          // 2.6
           // If token cannot be refreshed, then user should be logged out
           await tokenStorage.clear();
-          ShowcaseHelper().userLoggedOut(
-            'User was logged out during the response interception, '
-            'because the token was not valid or could not be refreshed',
-          );
+          return handler.rejectResponse(e);
+          // However, if another error occurs, like internet connection error,
+          // then we should not log out the user, but just reject the response
+        } on Object catch (e) {
+          // 2.7
           return handler.rejectResponse(e);
         }
       } else {
-        ShowcaseHelper().userLoggedOut(
-          'User was logged out during the response interception, '
-          'because the token is not valid and cannot be refreshed',
-        );
+        // 2.8
         // If token cannot be refreshed, then user should be logged out
         await tokenStorage.clear();
         return handler.rejectResponse(
@@ -193,13 +209,10 @@ class AuthInterceptor extends SequentialHttpInterceptor
       }
     }
 
+    // 2.9
     // If token is different, then the token is already refreshed
     // and the request should be made again
     final newResponse = await retryRequest(response, retryClient);
-    ShowcaseHelper().requestRetried(
-      'Request was retried after the token '
-      'was refreshed in response interceptor',
-    );
 
     return handler.resolveResponse(newResponse);
   }

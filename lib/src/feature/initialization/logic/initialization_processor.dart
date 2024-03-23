@@ -54,9 +54,8 @@ final class InitializationProcessor {
             ? AuthenticationStatus.authenticated
             : AuthenticationStatus.unauthenticated,
       ),
-      authStatusSource: authInterceptor,
       authRepository: AuthRepositoryImpl(
-        dataSource: AuthDataSourceNetwork(client: interceptedClient),
+        dataSource: AuthDataSourceNetwork(client: fakeClient),
         storage: storage,
       ),
     );
