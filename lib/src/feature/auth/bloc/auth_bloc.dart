@@ -54,8 +54,6 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
         ),
       );
       onError(e, stackTrace);
-    } finally {
-      emit(AuthState.idle(status: state.status));
     }
   }
 
@@ -79,8 +77,6 @@ final class AuthBloc extends Bloc<AuthEvent, AuthState> with SetStateMixin {
         ),
       );
       onError(e, stackTrace);
-    } finally {
-      emit(AuthState.idle(status: state.status));
     }
   }
 }
