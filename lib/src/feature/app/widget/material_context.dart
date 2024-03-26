@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizzle_starter/src/core/localization/localization.dart';
+import 'package:sizzle_starter/src/core/router/auth_guard.dart';
+import 'package:sizzle_starter/src/core/router/redirect_builder.dart';
 import 'package:sizzle_starter/src/core/router/routes.dart';
-import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
-import 'package:sizzle_starter/src/feature/auth/widget/auth_scope.dart';
 
 final _themeData = ThemeData(
   useMaterial3: true,
@@ -38,20 +38,7 @@ class _MaterialContextState extends State<MaterialContext> {
     _router = GoRouter(
       initialLocation: '/login',
       routes: $appRoutes,
-      redirect: (context, state) {
-        final scope = AuthScope.of(context);
-        final loggingIn = state.matchedLocation == '/login';
-
-        if (scope.status == AuthenticationStatus.unauthenticated) {
-          return '/login';
-        }
-
-        if (loggingIn) {
-          return '/dashboard';
-        }
-
-        return null;
-      },
+      redirect: GuardBuilder([AuthGuard(), UnauthorizedGuard()]).redirect,
     );
   }
 
