@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizzle_starter/src/core/components/rest_client/rest_client.dart';
 import 'package:sizzle_starter/src/core/utils/preferences_dao.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
+import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 
 /// {@template token_storage_sp}
 /// Implementation of [TokenStorage] that uses [TypedEntry] to store
@@ -44,12 +45,15 @@ final class TokenStorageSP implements TokenStorage<Token> {
       _refreshToken.set(tokenPair.refreshToken)
     ).wait;
 
+    ShowcaseHelper().clear();
+
     _streamController.add(tokenPair);
   }
 
   @override
   Future<void> clear() async {
     await (_accessToken.remove(), _refreshToken.remove()).wait;
+    ShowcaseHelper().clear();
     _streamController.add(null);
   }
 
