@@ -22,7 +22,7 @@ final class RedirectIfAuthenticatedGuard extends Guard {
       return '/dashboard';
     }
 
-    return state.fullPath;
+    return null;
   }
 }
 
@@ -44,6 +44,6 @@ final class RedirectIfUnauthenticatedGuard extends Guard {
       return '/login';
     }
 
-    return state.fullPath;
+    return null;
   }
 }
