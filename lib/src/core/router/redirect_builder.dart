@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// A builder for the redirect function.
-final class GuardBuilder {
-  final List<Guard> _guards;
+final class RedirectBuilder {
+  final Set<Guard> _guards;
 
-  /// Creates a [GuardBuilder] with a list of [Guard]s.
-  const GuardBuilder(this._guards);
+  /// Creates a [RedirectBuilder] with a list of [Guard]s.
+  const RedirectBuilder(this._guards);
 
   /// Adds a [Guard] to the list of guards.
-  String? redirect(BuildContext context, GoRouterState state) {
+  String? call(BuildContext context, GoRouterState state) {
     for (final guard in _guards) {
       final matched =
           guard.matchPattern.matchAsPrefix(state.matchedLocation) != null;

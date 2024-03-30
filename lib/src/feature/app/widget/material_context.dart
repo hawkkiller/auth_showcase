@@ -38,7 +38,10 @@ class _MaterialContextState extends State<MaterialContext> {
     _router = GoRouter(
       initialLocation: '/login',
       routes: $appRoutes,
-      redirect: GuardBuilder([AuthGuard(), UnauthorizedGuard()]).redirect,
+      redirect: RedirectBuilder({
+        RedirectIfAuthenticatedGuard(),
+        RedirectIfUnauthenticatedGuard(),
+      }),
     );
   }
 
