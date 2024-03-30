@@ -9,7 +9,7 @@ final class RedirectBuilder {
   const RedirectBuilder(this._guards);
 
   /// Redirects the user to a new location based on the [Guard]s.
-  /// 
+  ///
   /// If the location matches the [Guard.matchPattern], the [Guard.redirect]
   /// function will be called.
   String? call(BuildContext context, GoRouterState state) {

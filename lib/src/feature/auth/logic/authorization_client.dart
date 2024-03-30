@@ -8,7 +8,7 @@ import 'package:sizzle_starter/src/feature/auth/logic/auth_interceptor.dart';
 import 'package:sizzle_starter/src/feature/auth/logic/showcase_helper.dart';
 
 /// Example client that can be used for JWT tokens
-/// 
+///
 /// It is not used in this guide, but serves as an example.
 final class JWTAuthorizationClient implements AuthorizationClient<Token> {
   final Client _client;
