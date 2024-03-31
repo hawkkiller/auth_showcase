@@ -129,6 +129,12 @@ sealed class AuthState {
     required AuthenticationStatus status,
     required Object error,
   }) = _AuthStateError;
+
+  /// Get error if state is error
+  Object? get error => switch (this) {
+    final _AuthStateError e => e.error,
+    _ => null,
+  };
 }
 
 final class _AuthStateIdle extends AuthState {
@@ -166,6 +172,7 @@ final class _AuthStateProcessing extends AuthState {
 }
 
 final class _AuthStateError extends AuthState {
+  @override
   final Object error;
 
   const _AuthStateError({
