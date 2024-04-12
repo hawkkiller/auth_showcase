@@ -12,9 +12,6 @@ final class RedirectIfAuthenticatedGuard extends Guard {
   Pattern get matchPattern => RegExp(r'^/(login|signup)$');
 
   @override
-  bool get invokeWhenMatched => true;
-
-  @override
   String? redirect(BuildContext context, GoRouterState state) {
     final auth = AuthScope.of(context);
 
@@ -34,7 +31,7 @@ final class RedirectIfUnauthenticatedGuard extends Guard {
   Pattern get matchPattern => RegExp(r'^/(login|signup)$');
 
   @override
-  bool get invokeWhenMatched => false;
+  bool get invertRedirect => true;
 
   @override
   String? redirect(BuildContext context, GoRouterState state) {

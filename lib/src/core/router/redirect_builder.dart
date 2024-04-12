@@ -16,7 +16,7 @@ final class RedirectBuilder {
     for (final guard in _guards) {
       final matched =
           guard.matchPattern.matchAsPrefix(state.matchedLocation) != null;
-      if (matched == guard.invokeWhenMatched) {
+      if (matched == guard.invertRedirect) {
         return guard.redirect(context, state);
       }
     }
@@ -30,11 +30,11 @@ abstract base class Guard {
   Pattern get matchPattern;
 
   /// If true, the [redirect] function will be called
-  /// when the location matches the [matchPattern].
+  /// when the location does not match the [matchPattern].
   ///
   /// If false, the [redirect] function will be called
-  /// when the location does not match the [matchPattern].
-  bool get invokeWhenMatched => true;
+  /// when the location matches the [matchPattern].
+  bool get invertRedirect => false;
 
   /// The redirect function to be called when
   /// the location matches the [matchPattern].
