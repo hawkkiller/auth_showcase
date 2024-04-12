@@ -16,7 +16,7 @@ final class RedirectBuilder {
     for (final guard in _guards) {
       final matched =
           guard.matchPattern.matchAsPrefix(state.matchedLocation) != null;
-      if (matched == guard.invertRedirect) {
+      if (matched != guard.invertRedirect) {
         return guard.redirect(context, state);
       }
     }
