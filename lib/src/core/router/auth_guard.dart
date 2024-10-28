@@ -6,7 +6,7 @@ import 'package:sizzle_starter/src/feature/auth/widget/auth_scope.dart';
 
 /// Guard that navigates user from unauthorized routes to dashboard
 /// if the user is authenticated.
-final class RedirectIfAuthenticatedGuard extends Guard {
+final class RedirectIfAuthenticatedGuard extends RedirectGuard {
   // matches login and signup routes
   @override
   Pattern get matchPattern => RegExp(r'^/(login|signup)$');
@@ -25,13 +25,13 @@ final class RedirectIfAuthenticatedGuard extends Guard {
 
 /// Guard that navigates user from authorized routes to login
 /// when their authentication status is unauthenticated.
-final class RedirectIfUnauthenticatedGuard extends Guard {
+final class RedirectIfUnauthenticatedGuard extends RedirectGuard {
   // matches dashboard and settings routes
   @override
   Pattern get matchPattern => RegExp(r'^/(login|signup)$');
 
   @override
-  bool get invertRedirect => true;
+  bool get invertMatch => true;
 
   @override
   String? redirect(BuildContext context, GoRouterState state) {
